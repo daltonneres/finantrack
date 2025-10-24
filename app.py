@@ -230,4 +230,6 @@ if __name__ == '__main__':
             db.engine.execute('ALTER TABLE "account" ADD COLUMN bank VARCHAR(50)')
         except Exception:
             pass
-    app.run(debug=True)
+
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)

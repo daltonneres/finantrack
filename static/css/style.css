@@ -1,0 +1,62 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f6f7fb;
+  color: #333;
+  text-align: center;
+}
+
+header {
+  background: #004aad;
+  color: white;
+  padding: 15px;
+}
+
+input, button {
+  margin: 8px;
+  padding: 10px;
+}
+
+/* Centraliza o formulário na página */
+.form-container {
+    max-width: 350px;       /* largura menor, mais compacta */
+    margin: 50px auto;      /* centraliza horizontalmente e dá espaço em cima */
+    padding: 20px;
+    background-color: #f8f8f8;  /* cor de fundo suave */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* Campos do formulário menores */
+.form-container input[type="text"],
+.form-container input[type="password"],
+.form-container input[type="email"],
+.form-container input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;   /* espaço entre campos */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;       /* tamanho da fonte menor */
+}
+
+/* Botão centralizado */
+.form-container button {
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.form-container button:hover {
+    background-color: #45a049;
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}

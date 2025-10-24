@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - FinanTrack</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .account-card { 
+            cursor: pointer; 
+            transition: transform 0.3s; 
+        }
+        .account-card:hover { 
+            transform: scale(1.03); 
+        }
+        .bank-icon {
+            margin-bottom: 10px;
+        }
+        .no-accounts {
+            text-align: center;
+            color: #6c757d;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand" href="{{ url_for('dashboard') }}">FinanTrack</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarMenu">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#addAccountModal">Adicionar Conta</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#removeAllModal">Remover Tudo</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('logout') }}">Sair</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-5">
+    <h2 class="mb-3">Bem-vindo ao seu Dashboard!</h2>
+    <p>Gerencie suas contas e transações financeiras abaixo.</p>
+
+    <!-- Adicionar Transação -->
+    {% if accounts %}
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">Adicionar Transação</h5>
+            <form method="POST" class="row g-3" action="{{ url_for('add_transaction') }}">
+                <div class="col-md-3">
+                    <select class="form-select" name="account_id" required>
+                        <option value="">Conta de Origem</option>
+                        {% for acc in accounts %}
+                        <option value="{{ acc.id }}">{{ acc.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" name="type" required>
+                        <option value="">Tipo</option>
+                        <option value="entrada">Entrada</option>
+                        <option value="saida">Saída</option>
+                        <option value="transferencia">Transferência</option>
+                    </select>
+                </div>
+                <div class="col-md-3" id="target-account-div" style="display: none;">
+                    <select class="form-select" name="target_account_id">
+                        <option value="">Conta de Destino</option>
+                        {% for acc in accounts %}
+                        <option value="{{ acc.id }}">{{ acc.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="text" class="form-control" name="description" placeholder="Descrição" required>
+                </div>
+                <div class="col-md-2">
+                    <input type="number" step="0.01" class="form-control" name="amount" placeholder="Valor" required>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" name="category">
+                        <option value="">Categoria</option>
+                        <option value="Alimentação">Alimentação</option>
+                        <option value="Transporte">Transporte</option>
+                        <option value="Lazer">Lazer</option>
+                        <option value="Salário">Salário</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+                <div class="col-12 mt-2">
+                    <button type="submit" class="btn btn-success w-100">Adicionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Listagem de Contas -->
+    <div class="d-flex flex-wrap justify-content-center mt-4">
+        {% if accounts %}
+            {% for account in accounts %}
+            <div class="card account-card m-2 p-3 text-center" style="width: 220px;">
+                <a href="{{ url_for('conta', account_id=account.id) }}" style="text-decoration: none; color: inherit;">
+                    <img src="{{ url_for('static', filename='icons/' + bank_icons.get(account.bank, 'default.png')) }}" 
+                        alt="{{ account.bank }}" class="bank-icon" width="50">
+                    <h5>{{ account.name }}</h5>
+                    <p>Saldo: R$ {{ '%.2f'|format(balances[account.id]) }}</p>
+                </a>
+                <form method="POST" action="{{ url_for('delete_bank_account', account_id=account.id) }}"
+                    onsubmit="return confirm('Tem certeza que deseja remover esta conta e todas as transações?');">
+                    <button type="submit" class="btn btn-danger btn-sm w-100 mt-2">Remover Conta</button>
+                </form>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-accounts">
+                <p>Você ainda não possui contas. Use o menu no canto superior direito para adicionar sua primeira conta.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal Adicionar Conta -->
+<div class="modal fade" id="addAccountModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" action="{{ url_for('add_account') }}">
+        <div class="modal-header">
+          <h5 class="modal-title">Adicionar Conta Bancária</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="text" class="form-control mb-2" name="name" placeholder="Nome da Conta" required>
+          <select class="form-select" name="bank" required>
+            <option value="">Escolha o Banco</option>
+            {% for key in bank_icons.keys() %}
+            <option value="{{ key }}">{{ key }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Adicionar</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Rodapé -->
+<footer class="bg-light text-center text-muted mt-5 py-3 border-top">
+    <small>
+        Desenvolvido por <strong>Dalton Neres</strong> | Desenvolvedor Full Stack<br>
+        Projeto desenvolvido em <strong>Python (Flask)</strong>
+    </small>
+</footer>
+
+<script>
+    // Mostrar campo "Conta de Destino" apenas para transferências
+    const typeSelect = document.querySelector('select[name="type"]');
+    const targetDiv = document.getElementById('target-account-div');
+    typeSelect.addEventListener('change', () => {
+        targetDiv.style.display = typeSelect.value === 'transferencia' ? 'block' : 'none';
+    });
+
+    // Fecha o menu hambúrguer automaticamente após clicar em qualquer item
+    document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        const navbarCollapse = document.getElementById('navbarMenu');
+        if (navbarCollapse.classList.contains('show')) {''
+          new bootstrap.Collapse(navbarCollapse).hide();
+        }
+      });
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
